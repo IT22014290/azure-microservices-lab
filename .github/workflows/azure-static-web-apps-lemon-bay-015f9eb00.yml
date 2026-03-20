@@ -33,7 +33,7 @@ jobs:
           output_location: "build" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
         env:
-          REACT_APP_API_URL: https://gateway.blackpebble-f50dabf6.eastasia.azurecontainerapps.io
+          REACT_APP_API_URL: https://gateway.redwave-597fbb8a.eastasia.azurecontainerapps.io
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

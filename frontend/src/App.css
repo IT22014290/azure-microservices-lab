@@ -50,6 +50,18 @@ body {
   margin-bottom: 1.2rem;
   padding-bottom: 0.5rem;
   border-bottom: 2px solid #e8f0fe;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.section-tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: #e8f4fd;
+  color: #004e8c;
+  border: 1px solid #0078d4;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
 }
 
 /* ── Badge ── */
@@ -60,7 +72,8 @@ body {
   font-size: 0.8rem;
   font-weight: 600;
 }
-.badge-ok    { background: #d4edda; color: #155724; }
+.badge-ok   { background: #d4edda; color: #155724; }
+.badge-warn { background: #fff3cd; color: #856404; }
 .badge-error { background: #f8d7da; color: #721c24; }
 
 /* ── Health Grid ── */
@@ -96,10 +109,12 @@ body {
   font-size: 0.9rem;
 }
 .alert-error { background: #fff3f3; border: 1px solid #f5c2c7; color: #842029; }
+.alert-warn  { background: #fffbf0; border: 1px solid #ffd166; color: #7a5c00; }
 .hint { margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.8; }
 .hint code { background: #f8d7da; padding: 0.1rem 0.3rem; border-radius: 3px; }
+.alert-warn code { background: #ffe8a0; padding: 0.1rem 0.3rem; border-radius: 3px; }
 
-/* ── Cards ── */
+/* ── Service Cards ── */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -118,12 +133,67 @@ body {
 .card-type { font-size: 0.78rem; color: #0078d4; font-weight: 600; margin-bottom: 0.4rem; }
 .card-desc { font-size: 0.85rem; color: #555; }
 
+/* ── Product Cards ── */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.product-card {
+  border: 2px solid;
+  border-radius: 10px;
+  padding: 1.2rem;
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+.product-card:hover {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.product-category {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.product-name {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 0.4rem;
+}
+.product-desc {
+  font-size: 0.82rem;
+  color: #555;
+  margin-bottom: 0.9rem;
+  line-height: 1.5;
+}
+.product-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.price-amount {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0078d4;
+}
+.price-unit {
+  font-size: 0.75rem;
+  color: #777;
+}
+
 /* ── Architecture Diagram ── */
 .arch-diagram {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.8rem;
   flex-wrap: wrap;
 }
 .arch-box {
@@ -131,19 +201,22 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
-  padding: 1.2rem 1.5rem;
+  padding: 1.1rem 1.3rem;
   border-radius: 12px;
-  min-width: 160px;
+  min-width: 145px;
   text-align: center;
 }
-.arch-box strong { font-size: 0.95rem; }
-.arch-box small  { font-size: 0.75rem; color: #555; }
-.arch-icon { font-size: 2rem; margin-bottom: 0.2rem; }
-.frontend-box { background: #e8f4fd; border: 2px solid #0078d4; }
-.gateway-box  { background: #e8fdf4; border: 2px solid #107c10; }
-.acr-box      { background: #fdf4e8; border: 2px solid #ff8c00; }
+.arch-box strong { font-size: 0.9rem; }
+.arch-box small  { font-size: 0.72rem; color: #555; }
+.arch-icon { font-size: 1.8rem; margin-bottom: 0.2rem; }
+.frontend-box  { background: #e8f4fd; border: 2px solid #0078d4; }
+.gateway-box   { background: #e8fdf4; border: 2px solid #107c10; }
+.products-box  { background: #fdf4e8; border: 2px solid #ff8c00; }
+.acr-box       { background: #f4e8fd; border: 2px solid #8764b8; }
 .arch-arrow {
-  font-size: 0.85rem; color: #888; font-weight: 600;
+  font-size: 0.82rem; color: #888; font-weight: 600;
+}
+.arch-arrow-down {
   writing-mode: horizontal-tb;
 }
 
@@ -152,7 +225,7 @@ body {
 .info-table tr { border-bottom: 1px solid #f0f0f0; }
 .info-table tr:last-child { border-bottom: none; }
 .info-key { padding: 0.6rem 1rem 0.6rem 0; color: #555; width: 35%; font-weight: 600; }
-.info-val { padding: 0.6rem 0; color: #1a1a2e; }
+.info-val { padding: 0.6rem 0; color: #1a1a2e; word-break: break-all; }
 
 /* ── States ── */
 .loading { color: #0078d4; font-style: italic; }

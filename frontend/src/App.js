@@ -4,9 +4,9 @@ import './App.css';
 const API_URL = process.env.REACT_APP_API_URL || '';
 
 function StatusBadge({ status }) {
-  const isOk = status === 'ok' || status === 'running';
+  const isOk = status === 'ok' || status === 'running' || status === 'active';
   return (
-    <span className={`badge ${isOk ? 'badge-ok' : 'badge-error'}`}>
+    <span className={`badge ${isOk ? 'badge-ok' : 'badge-warn'}`}>
       {isOk ? '● Online' : '● Offline'}
     </span>
   );
@@ -25,35 +25,66 @@ function ServiceCard({ name, type, description, status }) {
   );
 }
 
+function ProductCard({ name, category, description, price, unit, status }) {
+  const categoryColors = {
+    Containers:    { bg: '#e8f4fd', border: '#0078d4' },
+    Web:           { bg: '#e8fdf4', border: '#107c10' },
+    Compute:       { bg: '#fdf4e8', border: '#ff8c00' },
+    Storage:       { bg: '#f4e8fd', border: '#8764b8' },
+    Observability: { bg: '#fde8e8', border: '#d83b01' },
+  };
+  const style = categoryColors[category] || { bg: '#f8f9ff', border: '#ccc' };
+  return (
+    <div className="product-card" style={{ background: style.bg, borderColor: style.border }}>
+      <div className="product-header">
+        <span className="product-category" style={{ color: style.border }}>{category}</span>
+        <StatusBadge status={status} />
+      </div>
+      <h3 className="product-name">{name}</h3>
+      <p className="product-desc">{description}</p>
+      <div className="product-price">
+        <span className="price-amount">
+          {price === 0 ? 'Free' : `$${price.toFixed(4)}`}
+        </span>
+        {price > 0 && <span className="price-unit">{unit}</span>}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
-  const [health, setHealth] = useState(null);
+  const [health, setHealth]     = useState(null);
   const [services, setServices] = useState([]);
-  const [info, setInfo] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [info, setInfo]         = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(null);
   const [lastChecked, setLastChecked] = useState(null);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [healthRes, servicesRes, infoRes] = await Promise.all([
+      const [healthRes, servicesRes, infoRes, productsRes] = await Promise.all([
         fetch(`${API_URL}/health`),
         fetch(`${API_URL}/api/services`),
         fetch(`${API_URL}/api/info`),
+        fetch(`${API_URL}/api/products`),
       ]);
 
       if (!healthRes.ok) throw new Error(`Gateway returned ${healthRes.status}`);
 
-      const [healthData, servicesData, infoData] = await Promise.all([
+      const [healthData, servicesData, infoData, productsData] = await Promise.all([
         healthRes.json(),
         servicesRes.json(),
         infoRes.json(),
+        productsRes.json(),
       ]);
 
       setHealth(healthData);
       setServices(servicesData.services || []);
       setInfo(infoData);
+      setProducts(productsData.data || []);
       setLastChecked(new Date().toLocaleTimeString());
     } catch (err) {
       setError(err.message);
@@ -79,7 +110,8 @@ export default function App() {
       </header>
 
       <main className="main">
-        {/* Gateway Status */}
+
+        {/* ── Gateway Health ── */}
         <section className="section">
           <h2>Gateway Health</h2>
           {loading && <p className="loading">Connecting to gateway...</p>}
@@ -108,6 +140,10 @@ export default function App() {
                 <span className="value">{health.environment}</span>
               </div>
               <div className="health-item">
+                <span className="label">Products Service</span>
+                <StatusBadge status={health.productsServiceConfigured ? 'ok' : 'error'} />
+              </div>
+              <div className="health-item">
                 <span className="label">Timestamp</span>
                 <span className="value">{new Date(health.timestamp).toLocaleString()}</span>
               </div>
@@ -116,14 +152,12 @@ export default function App() {
           {lastChecked && (
             <p className="last-checked">
               Last checked: {lastChecked}{' '}
-              <button className="btn-refresh" onClick={fetchAll}>
-                Refresh
-              </button>
+              <button className="btn-refresh" onClick={fetchAll}>Refresh</button>
             </p>
           )}
         </section>
 
-        {/* Services */}
+        {/* ── Deployed Services ── */}
         <section className="section">
           <h2>Deployed Services</h2>
           {services.length > 0 ? (
@@ -137,7 +171,27 @@ export default function App() {
           )}
         </section>
 
-        {/* Architecture */}
+        {/* ── Product Catalog (from products-service via gateway) ── */}
+        <section className="section">
+          <h2>Product Catalog <span className="section-tag">products-service</span></h2>
+          {loading && <p className="loading">Loading products from backend...</p>}
+          {!loading && products.length > 0 ? (
+            <div className="products-grid">
+              {products.map((p) => (
+                <ProductCard key={p.id} {...p} />
+              ))}
+            </div>
+          ) : (
+            !loading && !error && (
+              <div className="alert alert-warn">
+                Products service returned no data. Ensure the <code>products-service</code> Container
+                App is deployed and <code>PRODUCTS_SERVICE_URL</code> is set on the gateway.
+              </div>
+            )
+          )}
+        </section>
+
+        {/* ── Architecture Diagram ── */}
         <section className="section">
           <h2>Lab Architecture</h2>
           <div className="arch-diagram">
@@ -154,7 +208,14 @@ export default function App() {
               <small>Azure Container Apps</small>
               <small>Node.js · Port 3000</small>
             </div>
-            <div className="arch-arrow">↑ pull image</div>
+            <div className="arch-arrow">→ proxy →</div>
+            <div className="arch-box products-box">
+              <div className="arch-icon">🛒</div>
+              <strong>Products Service</strong>
+              <small>Azure Container Apps</small>
+              <small>Node.js · Port 3001</small>
+            </div>
+            <div className="arch-arrow arch-arrow-down">↑ pull images ↑</div>
             <div className="arch-box acr-box">
               <div className="arch-icon">📦</div>
               <strong>Container Registry</strong>
@@ -164,7 +225,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* Gateway Info */}
+        {/* ── Gateway Info ── */}
         {info && (
           <section className="section">
             <h2>Gateway Info</h2>
@@ -180,6 +241,7 @@ export default function App() {
             </table>
           </section>
         )}
+
       </main>
 
       <footer className="footer">
